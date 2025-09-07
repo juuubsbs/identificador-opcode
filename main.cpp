@@ -1,27 +1,28 @@
 #include <iostream>
 #include <cstdint> //biblioteca que contém o uint
 #include <fstream>
+//#include "intruction_types_RISCV.hpp"
 
 //tentando criar um programa que recebe um arquivo, lê linha por linha,
 // aplica a mascara de bits e descobre qual tipo de opcode ele é 
+
 //considerando um arquivo de entrada em hexadecimal diga o tipo da instrução
 //diga quantas instruções há de cada tipo (add, addi, sub...)
 //hazard
 
 //conflito estrutural é questão de prova
 
+
+//passa pra biblioteca
 uint32_t isolate_mask(uint32_t current_hexa, uint32_t itembit ){
     uint32_t result = current_hexa & itembit;
     return result;
 }
 
-//if instype == I{
-//isolate_mask(current hexa, other_location)}
-//other_location = r2, rd, imm....7-11...
-
+//passa pra biblioteca
 std::string opcode_identifier(uint32_t opcode){
     switch(opcode){
-        //tipo R
+        //tipo R 
         case 0x33:
             return "Tipo R";
         //tipo I
@@ -54,7 +55,7 @@ std::string opcode_identifier(uint32_t opcode){
 
 int main(){
     int cont_line = 0;
-    uint32_t opcodebit = 0x7F; //cara que eu uso pra isolar os 7 primeiros bits (opcode)
+    uint32_t opcodebit = 0x0000007F; //cara que eu uso pra isolar os 7 primeiros bits (opcode)
     uint32_t opcode; //cara que vai receber os opcodes pra mim
     std::string instype;
 
@@ -71,6 +72,8 @@ int main(){
 
         opcode = isolate_mask(current_hexa, opcodebit);
         instype = opcode_identifier(opcode);
+
+
 
         std:: cout << "\nLinha " << cont_line << " instrucao '" << current_line << "' eh: " << instype;
     }
