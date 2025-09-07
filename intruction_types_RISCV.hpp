@@ -6,8 +6,10 @@
 using namespace std;
 
 // --------------------- DEFINIÇÕES DE MÁSCARAS ---------------------
-//Usei nomes distintos para as duas ocorrências de imm[11] (uma no formato B e outra no J) para evitar ambiguidade: IMM_11_B (bit 7) e IMM_11_J (bit 20).
-//IMM_12 (B-type) e IMM_20 (J-type) apontam para o mesmo bit físico ([31]) — por isso a mesma máscara 0x80000000.
+//Usei nomes distintos para as duas ocorrências de imm[11] (uma no formato B 
+//e outra no J) para evitar ambiguidade: IMM_11_B (bit 7) e IMM_11_J (bit 20).
+//IMM_12 (B-type) e IMM_20 (J-type) apontam para o mesmo bit físico ([31]) — por
+// isso a mesma máscara 0x80000000.
 
 #define OPCODE   0x7F     // bits [6:0]
 #define RD       0xF80    // bits [11:7]

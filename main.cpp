@@ -23,6 +23,7 @@ int main(){
     ifstream meu_arquivo;
     meu_arquivo.open("hexa_dump.txt");
 
+    //map: contador, recebe um valor de instype pra somar
     map<string, int> contador;
 
     string current_line;
@@ -43,6 +44,8 @@ int main(){
     }
 
     cout << "\n\n===== RESUMO =====\n";
+    
+    //par é um ponteiro de tipo automático que navega pelo vetor map 
     for(auto &par : contador){
         cout << par.first << " -> " << par.second << " instrucoes\n";
     }
