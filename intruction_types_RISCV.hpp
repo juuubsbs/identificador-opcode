@@ -75,6 +75,14 @@ string J_type_instruction(uint32_t opcode) {
     return "J-type desconhecida";
 }
 
+std::string to_binary(uint32_t value, int bits = 3) {
+    std::string result;
+    for (int i = bits - 1; i >= 0; --i) {
+        result += ((value >> i) & 1) ? '1' : '0';
+    }
+    return result;
+}
+
 // --------------------- IDENTIFICADOR PRINCIPAL ---------------------
 
 inline string opcode_identifier(uint32_t instr) {
@@ -83,16 +91,16 @@ inline string opcode_identifier(uint32_t instr) {
     uint32_t funct7 = (instr >> 25) & 0x7F;
 
     if (opcode == 0x33) // R-type
-        return "Tipo R - " + R_type_instruction(funct7, funct3);
+        return "Tipo R - " + R_type_instruction(funct7, funct3) + "func3 = " + to_binary(funct3);
 
     if (opcode == 0x13 || opcode == 0x03 || opcode == 0x67 || opcode == 0x0F || opcode == 0x73)
-        return "Tipo I - " + I_type_instruction(opcode, funct3);
+        return "Tipo I - " + I_type_instruction(opcode, funct3) + "func3 = " + to_binary(funct3);
 
     if (opcode == 0x23) // S-type
-        return "Tipo S - " + S_type_instruction(funct3);
+        return "Tipo S - " + S_type_instruction(funct3) + "func3 = " + to_binary(funct3);
 
     if (opcode == 0x63) // B-type
-        return "Tipo B - " + B_type_instruction(funct3);
+        return "Tipo B - " + B_type_instruction(funct3) + "func3 = " + to_binary(funct3);
 
     if (opcode == 0x37 || opcode == 0x17) // U-type
         return "Tipo U - " + U_type_instruction(opcode);
@@ -103,12 +111,15 @@ inline string opcode_identifier(uint32_t instr) {
     return "opcode desconhecido";
 }
 
+
+
 // ----------- EXTRAÇÃO DE REGISTRADORES (comentado por enquanto) ------------------
 
  struct Regs {
      int rd;
      int rs1;
      int rs2;
+     int imm;
  };
 
  inline int get_field(uint32_t instr, int pos, int len) {
@@ -126,6 +137,8 @@ inline string opcode_identifier(uint32_t instr) {
      } else if (type.find("Tipo I") != std::string::npos) {
          r.rd  = get_field(instr, 7, 5);
          r.rs1 = get_field(instr, 15, 5);
+         r.imm = get_field(instr, 20, 12);
+
 
      } else if (type.find("Tipo S") != std::string::npos ||
                 type.find("Tipo B") != std::string::npos) {

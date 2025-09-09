@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cstdint> // biblioteca que contém o uint
 #include <fstream>
-#include <map>
-#include <iomanip>
+#include <map> // map
+#include <iomanip> // 01, 02
 #include "intruction_types_RISCV.hpp"
 
 using namespace std;
@@ -12,7 +12,7 @@ int main() {
     string instype;
 
     ifstream meu_arquivo;
-    meu_arquivo.open("oie_hexaaaaaaa.txt");
+    meu_arquivo.open("esse_eh_direitinho.txt");
 
     map<string, int> contador;
 
@@ -38,7 +38,8 @@ int main() {
          Regs r = get_registers(current_hexa, instype);
          cout << " | rd=" << r.rd
               << " rs1=" << r.rs1
-              << " rs2=" << r.rs2;
+              << " rs2=" << r.rs2
+              << " imm=" << r.imm;
     }
 
     cout << "\n\n=========== RESUMO ============\n";
