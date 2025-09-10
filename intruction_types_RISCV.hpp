@@ -112,43 +112,118 @@ inline string opcode_identifier(uint32_t instr) {
 }
 
 
+//--------------------- ESTRUTURA DE IMEDIATOS ---------------------
+struct Immediates {
+    // S-type
+    int imm_11_5 = 0;
+    int imm_4_0  = 0;
+    // B-type
+    int imm_12   = 0;
+    int imm_10_5 = 0;
+    int imm_4_1  = 0;
+    int imm_11   = 0;
+    // U-type
+    int imm_31_12= 0;
+    // J-type
+    int imm_20   = 0;
+    int imm_10_1 = 0;
+    int imm_11_J = 0;
+    int imm_19_12= 0;
+};
 
-// ----------- EXTRAÇÃO DE REGISTRADORES (comentado por enquanto) ------------------
+//--------------------- FUNÇÕES DE EXTRAÇÃO DE IMEDIATOS FEIOS ---------------------
+int32_t get_s_imm(uint32_t instr){
+    int32_t imm = ((instr>>25) << 5) | ((instr >> 7) & 0x1F); // 11:5 | 4:0
+    if(imm & 0x800) imm |= 0xFFFFF000;
+    return imm;
+}
 
+int32_t get_b_imm(uint32_t instr){
+    int32_t imm = 0;
+    imm |= ((instr >> 31) & 0x1) << 12;  // imm[12]
+    imm |= ((instr >> 25) & 0x3F) << 5;  // imm[10:5]
+    imm |= ((instr >> 8) & 0xF) << 1;    // imm[4:1]
+    imm |= ((instr >> 7) & 0x1) << 11;   // imm[11]
+    if(imm & 0x1000) imm |= 0xFFFFE000;
+    return imm;
+}
+
+int32_t get_u_imm(uint32_t instr){
+    return instr & 0xFFFFF000; // bits 31:12
+}
+
+int32_t get_j_imm(uint32_t instr){
+    int32_t imm = 0;
+    imm |= ((instr >> 31) & 0x1) << 20;      // imm[20]
+    imm |= ((instr >> 21) & 0x3FF) << 1;     // imm[10:1]
+    imm |= ((instr >> 20) & 0x1) << 11;      // imm[11]
+    imm |= ((instr >> 12) & 0xFF) << 12;     // imm[19:12]
+    if(imm & 0x100000) imm |= 0xFFE00000;
+    return imm;
+}
+
+// ----------- EXTRAÇÃO DE REGISTRADORES ------------------
  struct Regs {
      int rd;
-     int rs1;
-     int rs2;
-     int imm;
+    int rs1;
+    int rs2;
+    Immediates imm;
+    int total;
  };
 
- inline int get_field(uint32_t instr, int pos, int len) {
+inline int get_field(uint32_t instr, int pos, int len) {
      return (instr >> pos) & ((1 << len) - 1);
  }
 
- inline Regs get_registers(uint32_t instr, const std::string &type) {
-     Regs r = {-1, -1, -1};
+inline Regs get_registers(uint32_t instr, const std::string &type) {
+    Regs r = {-1,-1,-1,Immediates(),0};
 
-     if (type.find("Tipo R") != std::string::npos) {
-         r.rd  = get_field(instr, 7, 5);
-         r.rs1 = get_field(instr, 15, 5);
-         r.rs2 = get_field(instr, 20, 5);
+    if(type.find("Tipo R") != string::npos) {
+        r.rd  = get_field(instr, 7, 5);
+        r.rs1 = get_field(instr, 15, 5);
+        r.rs2 = get_field(instr, 20, 5);
 
-     } else if (type.find("Tipo I") != std::string::npos) {
-         r.rd  = get_field(instr, 7, 5);
-         r.rs1 = get_field(instr, 15, 5);
-         r.imm = get_field(instr, 20, 12);
+    } else if(type.find("Tipo I") != string::npos) {
+        r.rd  = get_field(instr, 7, 5);
+        r.rs1 = get_field(instr, 15, 5);
+        r.imm.imm_11_5 = (instr >> 20) & 0xFFF;
+        r.total = r.imm.imm_11_5;
 
+    } else if(type.find("Tipo S") != string::npos) {
+        r.rs1 = get_field(instr, 15, 5);
+        r.rs2 = get_field(instr, 20, 5);
+        r.imm.imm_11_5 = (instr >> 25) & 0x7F;
+        r.imm.imm_4_0  = (instr >> 7) & 0x1F;
+        r.total = (r.imm.imm_11_5 << 5) | r.imm.imm_4_0;
+        if(r.imm.imm_11_5 & 0x40) r.total |= 0xFFFFF800;
 
-     } else if (type.find("Tipo S") != std::string::npos ||
-                type.find("Tipo B") != std::string::npos) {
-         r.rs1 = get_field(instr, 15, 5);
-         r.rs2 = get_field(instr, 20, 5);
+    } else if(type.find("Tipo B") != string::npos) {
+        r.rs1 = get_field(instr, 15, 5);
+        r.rs2 = get_field(instr, 20, 5);
+        r.imm.imm_12   = (instr >> 31) & 0x1;
+        r.imm.imm_10_5 = (instr >> 25) & 0x3F;
+        r.imm.imm_4_1  = (instr >> 8) & 0xF;
+        r.imm.imm_11   = (instr >> 7) & 0x1;
+        r.total = (r.imm.imm_12 << 12) | (r.imm.imm_11 << 11) |
+                  (r.imm.imm_10_5 << 5) | (r.imm.imm_4_1 << 1);
+        if(r.imm.imm_12) r.total |= 0xFFFFE000;
 
-     } else if (type.find("Tipo U") != std::string::npos ||
-                type.find("Tipo J") != std::string::npos) {
-         r.rd  = get_field(instr, 7, 5);
-     }
+    } else if(type.find("Tipo U") != string::npos) {
+        r.rd  = get_field(instr, 7, 5);
+        r.imm.imm_31_12 = instr & 0xFFFFF000;
+        r.total = r.imm.imm_31_12;
 
-     return r;
- }
+    } else if(type.find("Tipo J") != string::npos) {
+        r.rd  = get_field(instr, 7, 5);
+        r.imm.imm_20   = (instr >> 31) & 0x1;
+        r.imm.imm_10_1 = (instr >> 21) & 0x3FF;
+        r.imm.imm_11_J = (instr >> 20) & 0x1;
+        r.imm.imm_19_12= (instr >> 12) & 0xFF;
+        r.total = (r.imm.imm_20 << 20) | (r.imm.imm_19_12 << 12) |
+                  (r.imm.imm_11_J << 11) | (r.imm.imm_10_1 << 1);
+        if(r.imm.imm_20) r.total |= 0xFFF00000;
+    }
+
+    return r;
+}
+
