@@ -127,7 +127,7 @@ inline string opcode_identifier(uint32_t instr) {
  }
 
  inline Regs get_registers(uint32_t instr, const std::string &type) {
-     Regs r = {-1, -1, -1};
+     Regs r = {NULL, NULL, NULL};
 
      if (type.find("Tipo R") != std::string::npos) {
          r.rd  = get_field(instr, 7, 5);
