@@ -11,7 +11,7 @@ int main() {
     int cont_line = 0;
     string instype;
 
-    ifstream meu_arquivo("esse_eh_direitinho.txt");
+    ifstream meu_arquivo("hexas/esse_eh_direitinho.txt");
     if (!meu_arquivo.is_open()) {
         cout << "Erro ao abrir" << endl;
         return 1;
