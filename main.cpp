@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cstdint>
 #include <fstream>
-#include <map>
-#include <iomanip>
+#include <map>     //map
+#include <iomanip> //setfill
 #include "intruction_types_RISCV.hpp"
 
 using namespace std;
@@ -10,8 +10,10 @@ using namespace std;
 int main() {
     int cont_line = 0;
     string instype;
+    //IMPORTANTE DIGITAR ANTES DE COMPILAR
+    int base = 2;
 
-    ifstream meu_arquivo("hexas/esse_eh_direitinho.txt");
+    ifstream meu_arquivo("dumps/fib_rec_binario.txt");
     if (!meu_arquivo.is_open()) {
         cout << "Erro ao abrir" << endl;
         return 1;
@@ -25,21 +27,21 @@ int main() {
         if (current_line.empty()) continue;
         cont_line++;
 
-        current_hexa = stoul(current_line, nullptr, 16);
+        current_hexa = stoul(current_line, nullptr, base);
         instype = opcode_identifier(current_hexa);
         contador[instype]++;
 
-        cout << "\nLinha " << setw(2) << setfill('0') << cont_line
-             << " instrucao '" << current_line
+        cout << "\nL. " << setw(2) << setfill('0') << cont_line
+             << " inst. '" << current_line
              << "' eh: " << instype;
 
-        // Extrai registradores e immediates
+        // Extrai registradores e imediatos
         Regs r = get_registers(current_hexa, instype);
         cout << " | rd=" << r.rd
              << " rs1=" << r.rs1
              << " rs2=" << r.rs2;
 
-        // Imprime immediates detalhados e valor completo
+        // Imprime imediatos detalhados e valor completo
         if (instype.find("Tipo I") != string::npos) {
             int32_t imm_val = (int32_t)((current_hexa >> 20) & 0xFFF);
             if (imm_val & 0x800) imm_val |= 0xFFFFF000; // sinal
