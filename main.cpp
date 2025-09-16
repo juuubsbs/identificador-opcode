@@ -11,9 +11,9 @@ int main() {
     int cont_line = 0;
     string instype;
     //IMPORTANTE DIGITAR ANTES DE COMPILAR
-    int base = 2;
+    int base = 16;
 
-    ifstream meu_arquivo("dumps/fib_rec_binario.txt");
+    ifstream meu_arquivo("dumps/profs/fib_rec_hexadecimal.txt");
     if (!meu_arquivo.is_open()) {
         cout << "Erro ao abrir" << endl;
         return 1;
