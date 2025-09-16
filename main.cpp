@@ -43,30 +43,24 @@ int main() {
 
         // Imprime imediatos detalhados e valor completo
         if (instype.find("Tipo I") != string::npos) {
-            int32_t imm_val = (int32_t)((current_hexa >> 20) & 0xFFF);
-            if (imm_val & 0x800) imm_val |= 0xFFFFF000; // sinal
-            cout << " | imm(I)=" << imm_val
+            cout << " | imm(I)=" << r.total
                  << " (raw=" << r.imm.imm_11_5 << ")";
         } 
         else if (instype.find("Tipo S") != string::npos) {
-            int32_t imm_val = get_s_imm(current_hexa);
             cout << " | imm(S) = [" << r.imm.imm_11_5 << " | " << r.imm.imm_4_0 << "]"
-                 << " = " << imm_val;
+                 << " = " << r.total;
         } 
         else if (instype.find("Tipo B") != string::npos) {
-            int32_t imm_val = get_b_imm(current_hexa);
             cout << " | imm(B) = [" 
                  << r.imm.imm_12 << "|" << r.imm.imm_11 << "|" 
                  << r.imm.imm_10_5 << "|" << r.imm.imm_4_1 << "]"
                  << " = " << r.total;
         } 
         else if (instype.find("Tipo U") != string::npos) {
-            int32_t imm_val = get_u_imm(current_hexa);
             cout << " | imm(U)=" << r.imm.imm_31_12
-                 << " = " << imm_val;
+                 << " = " << r.total;
         } 
         else if (instype.find("Tipo J") != string::npos) {
-            int32_t imm_val = get_j_imm(current_hexa);
             cout << " | imm(J) = ["
                  << "imm_20= " << r.imm.imm_20
                  << ", imm_19_12= " << r.imm.imm_19_12

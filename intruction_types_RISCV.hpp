@@ -194,8 +194,7 @@ inline Regs get_registers(uint32_t instr, const std::string &type) {
         r.rs2 = get_field(instr, 20, 5);
         r.imm.imm_11_5 = (instr >> 25) & 0x7F;
         r.imm.imm_4_0  = (instr >> 7) & 0x1F;
-        r.total = (r.imm.imm_11_5 << 5) | r.imm.imm_4_0;
-        if(r.imm.imm_11_5 & 0x40) r.total |= 0xFFFFF800;
+        r.total = get_s_imm(instr);
 
     } else if(type.find("Tipo B") != string::npos) {
         r.rs1 = get_field(instr, 15, 5);
@@ -204,14 +203,12 @@ inline Regs get_registers(uint32_t instr, const std::string &type) {
         r.imm.imm_10_5 = (instr >> 25) & 0x3F;
         r.imm.imm_4_1  = (instr >> 8) & 0xF;
         r.imm.imm_11   = (instr >> 7) & 0x1;
-        r.total = (r.imm.imm_12 << 12) | (r.imm.imm_11 << 11) |
-                  (r.imm.imm_10_5 << 5) | (r.imm.imm_4_1 << 1);
-        if(r.imm.imm_12) r.total |= 0xFFFFE000;
+        r.total = get_b_imm(instr);
 
     } else if(type.find("Tipo U") != string::npos) {
         r.rd  = get_field(instr, 7, 5);
         r.imm.imm_31_12 = instr & 0xFFFFF000;
-        r.total = r.imm.imm_31_12;
+        r.total = get_u_imm(instr);
 
     } else if(type.find("Tipo J") != string::npos) {
         r.rd  = get_field(instr, 7, 5);
@@ -219,9 +216,7 @@ inline Regs get_registers(uint32_t instr, const std::string &type) {
         r.imm.imm_10_1 = (instr >> 21) & 0x3FF;
         r.imm.imm_11_J = (instr >> 20) & 0x1;
         r.imm.imm_19_12= (instr >> 12) & 0xFF;
-        r.total = (r.imm.imm_20 << 20) | (r.imm.imm_19_12 << 12) |
-                  (r.imm.imm_11_J << 11) | (r.imm.imm_10_1 << 1);
-        if(r.imm.imm_20) r.total |= 0xFFF00000;
+        r.total = get_j_imm(instr);
     }
 
     return r;
