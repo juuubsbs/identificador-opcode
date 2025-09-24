@@ -5,6 +5,8 @@
 #include <iomanip> //setfill
 #include "intruction_types_RISCV.hpp"
 
+//precisa da memoria de dados pra conseguir entender oq tá dentro do rd pra ver oq dá errado
+
 using namespace std;
 
 int main() {
@@ -13,7 +15,7 @@ int main() {
     //IMPORTANTE DIGITAR ANTES DE COMPILAR
     int base = 16;
 
-    ifstream meu_arquivo("dumps/profs/fib_rec_hexadecimal.txt");
+    ifstream meu_arquivo("dumps/nopsnopsnops.txt");
     if (!meu_arquivo.is_open()) {
         cout << "Erro ao abrir" << endl;
         return 1;
