@@ -1,0 +1,23 @@
+ // Imprime imediatos detalhados e valor completo
+        if (instype.find("Tipo I") != string::npos) {
+            cout << " | imm(I)=" << r.total
+                 << " (raw=" << ((current_hexa >> 20) & 0xFFF) << ")"; 
+        } 
+        else if (instype.find("Tipo S") != string::npos) {
+            cout << " | imm(S) = [" << ((current_hexa >> 25) & 0x7F) << " | " << ((current_hexa >> 7) & 0x1F) << "]"
+                 << " = " << r.total;
+        } 
+        else if (instype.find("Tipo B") != string::npos) {
+            //adiciona um conflito aqui
+            cout << " | imm(B) = [" 
+                 << ((current_hexa >> 31) & 0x1) << "|" << ((current_hexa >> 7) & 0x1) << "|" 
+                 << ((current_hexa >> 25) & 0x3F) << "|" << ((current_hexa >> 8) & 0xF) << "]"
+                 << " = " << r.total;
+        } 
+        else if (instype.find("Tipo U") != string::npos) {
+            cout << " | imm(U)=" << (current_hexa & 0xFFFFF000)
+                 << " = " << r.total;
+        } 
+        else if (instype.find("Tipo J") != string::npos) {
+            cout << " | imm(J) = [...] = " << r.total;
+        }

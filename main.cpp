@@ -5,8 +5,26 @@
 #include <iomanip> //setfill
 #include "instruction_types_RISCV.hpp"
 
-//precisa da memoria de dados pra conseguir entender oq tá dentro do rd pra ver oq dá errado
+/*vetor{
+    rs1
+    rs2
+    rd
+}
+*/
+
+//memoria de instruções                           
+//implementar forwarding                          
+//implementar os NOPS                             
+//criar o somador de endereço 
+//gerar os arquivos e comparar o numero de linhas
+
 using namespace std;
+
+struct instrucoes{
+    uint32_t id; //linha atual
+    string tipoInst; //addi, beq
+    Regs r; //imediato, rs1, rs2, rd
+};
 
 int main() {
     int cont_line = 0;
@@ -23,19 +41,32 @@ int main() {
     }
 
     string current_line; //variavel que contém a linha atual de leitura
+
     vector<uint32_t> instruction_memory;//vetor IMPORTANTEEE
+    int cont_linha;
+
+
+    vector<instrucoes> memoria_instrucoes;
+
+    //!!!!aqui fosse catalogado a memoria de intruções
     while (getline(meu_arquivo, current_line)) {
         if (current_line.empty()) continue;
+        //!!!!!!!!!!!!!!!!!!!!!!!!!
         instruction_memory.push_back(stoul(current_line, nullptr, base));
+        cont_linha++;
+        //!!!!!!!!!
+
     }
     meu_arquivo.close();
     
     // Inicialização do mapa de contagem
     map<string, int> contador;
     uint32_t current_hexa;
-
-    //nossa lista de conflitos
+    //vetor da memoria de intruções, é esse que usa
     
+//..................................................
+//...bool conflito_rs1 (memoria_instrucoes[0].r.rd == memoria_instrucoes[1].r.rs1);
+//..................................................
 
     // Loop de simulação principal 
     while (pc < instruction_memory.size() * 4) {
@@ -93,24 +124,39 @@ int main() {
                 -> as posições são ditadas pelo valor provindo de rd, que indica a posição
             r.total = possui o imediato, depois daquelas operações de concatenações e tudo mais
         */
+       //1
         if (instype.find("addi") != string::npos) {
             //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] + r.total;
-        } else if (instype.find("add ") != string::npos) { // Espaço para diferenciar de 'addi'
+        } 
+
+        //2
+        else if (instype.find("add ") != string::npos) { // Espaço para diferenciar de 'addi'
             //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] + registradores[r.rs2];
-        } else if (instype.find("sub ") != string::npos) {
+        } 
+
+        //3
+        else if (instype.find("sub ") != string::npos) {
             //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] - registradores[r.rs2];
-        } else if (instype.find("lw ") != string::npos) {
+        } 
+
+        //4
+        else if (instype.find("lw ") != string::npos) {
             //adiciona um conflito aqui
             uint32_t addr = registradores[r.rs1] + r.total;
             registradores[r.rd] = read_word_from_memory(addr);
-        } else if (instype.find("sw ") != string::npos) {
+        } 
+
+        //5
+        else if (instype.find("sw ") != string::npos) {
             //adiciona um conflito aqui
             uint32_t addr = registradores[r.rs1] + r.total;
             write_word_to_memory(addr, registradores[r.rs2]);
         }
+
+        //6
         // BEQ (Desvia se rs1 == rs2)
         else if (instype.find("beq") != string::npos) {
             if (registradores[r.rs1] == registradores[r.rs2]) {
@@ -118,6 +164,8 @@ int main() {
                 pc_changed_by_branch = true;
             }
         } 
+
+        //7
         // BNE (Desvia se rs1 != rs2)
         else if (instype.find("bne") != string::npos) {
             if (registradores[r.rs1] != registradores[r.rs2]) {
@@ -125,6 +173,8 @@ int main() {
                 pc_changed_by_branch = true;
             }
         } 
+
+        //8
         // BLT (COM SINAL)
         else if (instype.find("blt") != string::npos) {
             if (registradores[r.rs1] < registradores[r.rs2]) {
@@ -132,6 +182,8 @@ int main() {
                 pc_changed_by_branch = true;
             }
         } 
+
+        //9
         // BGE (COM SINAL)
         else if (instype.find("bge") != string::npos) {
             if (registradores[r.rs1] >= registradores[r.rs2]) {
@@ -139,6 +191,8 @@ int main() {
                 pc_changed_by_branch = true;
             }
         } 
+
+        //10
         // BLTU (SEM SINAL)
         else if (instype.find("bltu") != string::npos) {
             // utilizamos uint32_t para comparação sem sinal
@@ -147,6 +201,8 @@ int main() {
                 pc_changed_by_branch = true;
             }
         } 
+
+        //11
         // BGEU (SEM SINAL)
         else if (instype.find("bgeu") != string::npos) {
             // utilizamos uint32_t para comparação sem sinal
