@@ -11,16 +11,19 @@ using namespace std;
 int main() {
     int cont_line = 0;
     string instype;
-    //IMPORTANTE DIGITAR ANTES DE COMPILAR
+
+    //dita a base do código que vai ser lido
     int base = 16;
 
-    vector<uint32_t> instruction_memory;
+    //abre o arquivo
     ifstream meu_arquivo("dumps/nopsnopsnops.txt");
     if (!meu_arquivo.is_open()) {
         cout << "Erro ao abrir" << endl;
         return 1;
     }
-    string current_line;
+
+    string current_line; //variavel que contém a linha atual de leitura
+    vector<uint32_t> instruction_memory;//vetor IMPORTANTEEE
     while (getline(meu_arquivo, current_line)) {
         if (current_line.empty()) continue;
         instruction_memory.push_back(stoul(current_line, nullptr, base));
@@ -29,13 +32,17 @@ int main() {
     
     // Inicialização do mapa de contagem
     map<string, int> contador;
+    uint32_t current_hexa;
+
+    //nossa lista de conflitos
+    
 
     // Loop de simulação principal 
     while (pc < instruction_memory.size() * 4) {
         cont_line++;
 
         // Busca a instrução da memória usando o PC
-        uint32_t current_hexa = instruction_memory[pc / 4];
+        current_hexa = instruction_memory[pc / 4];
         
         // Identifica a instrução
         instype = opcode_identifier(current_hexa);
@@ -63,6 +70,7 @@ int main() {
                  << " = " << r.total;
         } 
         else if (instype.find("Tipo B") != string::npos) {
+            //adiciona um conflito aqui
             cout << " | imm(B) = [" 
                  << ((current_hexa >> 31) & 0x1) << "|" << ((current_hexa >> 7) & 0x1) << "|" 
                  << ((current_hexa >> 25) & 0x3F) << "|" << ((current_hexa >> 8) & 0xF) << "]"
@@ -87,19 +95,24 @@ int main() {
             r.total = possui o imediato, depois daquelas operações de concatenações e tudo mais
         */
         if (instype.find("addi") != string::npos) {
+            //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] + r.total;
         } 
         else if (instype.find("add ") != string::npos) { // Espaço para diferenciar de 'addi'
+            //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] + registradores[r.rs2];
         } 
         else if (instype.find("sub ") != string::npos) {
+            //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] - registradores[r.rs2];
         } 
         else if (instype.find("lw ") != string::npos) {
+            //adiciona um conflito aqui
             uint32_t addr = registradores[r.rs1] + r.total;
             registradores[r.rd] = read_word_from_memory(addr);
         } 
         else if (instype.find("sw ") != string::npos) {
+            //adiciona um conflito aqui
             uint32_t addr = registradores[r.rs1] + r.total;
             write_word_to_memory(addr, registradores[r.rs2]);
         }
