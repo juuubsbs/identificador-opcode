@@ -79,20 +79,31 @@ int main() {
         // Executa a instrução decodificada
         bool pc_changed_by_branch = false;
 
+        //essa parte realiza a soma, subtração entre outros dos valores
+        /*
+            registradores[] = meu vetor que salva os valores resultates das operações
+                -> possui 32 "espaços" para salvar cada um dos valores na posição correta
+                -> as posições são ditadas pelo valor provindo de rd, que indica a posição
+            r.total = possui o imediato, depois daquelas operações de concatenações e tudo mais
+        */
         if (instype.find("addi") != string::npos) {
-            registers[r.rd] = registers[r.rs1] + r.total;
-        } else if (instype.find("add ") != string::npos) { // Espaço para diferenciar de 'addi'
-            registers[r.rd] = registers[r.rs1] + registers[r.rs2];
-        } else if (instype.find("sub ") != string::npos) {
-            registers[r.rd] = registers[r.rs1] - registers[r.rs2];
-        } else if (instype.find("lw ") != string::npos) {
-            uint32_t addr = registers[r.rs1] + r.total;
-            registers[r.rd] = read_word_from_memory(addr);
-        } else if (instype.find("sw ") != string::npos) {
-            uint32_t addr = registers[r.rs1] + r.total;
-            write_word_to_memory(addr, registers[r.rs2]);
+            registradores[r.rd] = registradores[r.rs1] + r.total;
+        } 
+        else if (instype.find("add ") != string::npos) { // Espaço para diferenciar de 'addi'
+            registradores[r.rd] = registradores[r.rs1] + registradores[r.rs2];
+        } 
+        else if (instype.find("sub ") != string::npos) {
+            registradores[r.rd] = registradores[r.rs1] - registradores[r.rs2];
+        } 
+        else if (instype.find("lw ") != string::npos) {
+            uint32_t addr = registradores[r.rs1] + r.total;
+            registradores[r.rd] = read_word_from_memory(addr);
+        } 
+        else if (instype.find("sw ") != string::npos) {
+            uint32_t addr = registradores[r.rs1] + r.total;
+            write_word_to_memory(addr, registradores[r.rs2]);
         }
-        registers[0] = 0; // Garante que o registrador x0 seja sempre 0
+        registradores[0] = 0; // Garante que o registrador x0 seja sempre 0
 
         // Atualiza o Program Counter
         if (!pc_changed_by_branch) {

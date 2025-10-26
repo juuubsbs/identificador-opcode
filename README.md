@@ -78,3 +78,5 @@ Exemplo de execução (o `main` lê por padrão `dumps/nopsnopsnops.txt`) — aj
 
 Arquivo gerado automaticamente para ajudar no progresso rápido. Se quiser que eu aplique a refatoração agora, responda com `OK refatorar agora`.
 
+sw x5, 12(x10)  rs2, r.total(rs1) , ELE PEGA O VALOR DE X5 (RS2) e guarda assim: registers[r.rs2] e com "write_word_to_memory(addr, registers[r.rs2]);" ele basicamente pega o endereço, e o valor e guarda na memoria 
+lw x6, 12(x10)   rd, r.total(rs1) faz o mesmo calculo e guarda no registrador de destino

@@ -234,41 +234,41 @@
     //---------------------------------------------------------------------
     // -------- ESTADO DO PROCESSADOR --------
     uint32_t pc = 0; // Program Counter
-    vector<int32_t> registers(32, 0); // Banco de 32 registradores, inicializados em 0
-    vector<uint8_t> data_memory(4096, 0); // 4KB de memória de dados, inicializada em 0
+    vector<int32_t> registradores(32, 0); // Banco de 32 registradores, inicializados em 0
+    vector<uint8_t> memoria_dados(4096, 0); // 4KB de memória de dados, inicializada em 0
 
     // -------- FUNÇÕES AUXILIARES DE MEMÓRIA --------
     // Lê uma palavra de 32 bits (4 bytes) da memória
     int32_t read_word_from_memory(uint32_t address) {
-        if (address + 3 >= data_memory.size()) {
+        if (address + 3 >= memoria_dados.size()) {
             cerr << " [ERRO DE EXECUÇÃO: Leitura fora dos limites da memória no endereço " << address << "]" << endl;
             return 0;
         }
-        return (int32_t)((uint32_t)data_memory[address+3] << 24 |
-                        (uint32_t)data_memory[address+2] << 16 |
-                        (uint32_t)data_memory[address+1] << 8  |
-                        (uint32_t)data_memory[address+0]);
+        return (int32_t)((uint32_t)memoria_dados[address+3] << 24 |
+                         (uint32_t)memoria_dados[address+2] << 16 |
+                         (uint32_t)memoria_dados[address+1] << 8  |
+                         (uint32_t)memoria_dados[address+0]);
     }
 
     // Escreve uma palavra de 32 bits (4 bytes) na memória
     void write_word_to_memory(uint32_t address, int32_t value) {
-        if (address + 3 >= data_memory.size()) {
+        if (address + 3 >= memoria_dados.size()) {
             cerr << " [ERRO DE EXECUÇÃO: Escrita fora dos limites da memória no endereço " << address << "]" << endl;
             return;
         }
-        data_memory[address+0] = (value & 0x000000FF);
-        data_memory[address+1] = (value & 0x0000FF00) >> 8;
-        data_memory[address+2] = (value & 0x00FF0000) >> 16;
-        data_memory[address+3] = (value & 0xFF000000) >> 24;
+        memoria_dados[address+0] = (value & 0x000000FF);
+        memoria_dados[address+1] = (value & 0x0000FF00) >> 8;
+        memoria_dados[address+2] = (value & 0x00FF0000) >> 16;
+        memoria_dados[address+3] = (value & 0xFF000000) >> 24;
     }
 
     // Imprime os registradores que não são zero
     void print_final_registers() {
         cout << "\n\n================= ESTADO FINAL DOS REGISTRADORES =================\n";
         for(int i = 0; i < 32; ++i) {
-            if (registers[i] != 0 || i == 0) {
-                cout << "x" << setw(2) << setfill(' ') << i << " = " << setw(10) << registers[i] 
-                    << " (0x" << hex << setfill('0') << setw(8) << registers[i] << dec << ")" << endl;
+            if (registradores[i] != 0 || i == 0) {
+                cout << "x" << setw(2) << setfill(' ') << i << " = " << setw(10) << registradores[i] 
+                    << " (0x" << hex << setfill('0') << setw(8) << registradores[i] << dec << ")" << endl;
             }
         }
     }
