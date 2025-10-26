@@ -86,7 +86,6 @@ int main() {
 //---------------------------------------------------------------------------
         // Executa a instrução decodificada
         bool pc_changed_by_branch = false;
-
         //essa parte realiza a soma, subtração entre outros dos valores
         /*
             registradores[] = meu vetor que salva os valores resultates das operações
@@ -97,27 +96,67 @@ int main() {
         if (instype.find("addi") != string::npos) {
             //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] + r.total;
-        } 
-        else if (instype.find("add ") != string::npos) { // Espaço para diferenciar de 'addi'
+        } else if (instype.find("add ") != string::npos) { // Espaço para diferenciar de 'addi'
             //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] + registradores[r.rs2];
-        } 
-        else if (instype.find("sub ") != string::npos) {
+        } else if (instype.find("sub ") != string::npos) {
             //adiciona um conflito aqui
             registradores[r.rd] = registradores[r.rs1] - registradores[r.rs2];
-        } 
-        else if (instype.find("lw ") != string::npos) {
+        } else if (instype.find("lw ") != string::npos) {
             //adiciona um conflito aqui
             uint32_t addr = registradores[r.rs1] + r.total;
             registradores[r.rd] = read_word_from_memory(addr);
-        } 
-        else if (instype.find("sw ") != string::npos) {
+        } else if (instype.find("sw ") != string::npos) {
             //adiciona um conflito aqui
             uint32_t addr = registradores[r.rs1] + r.total;
             write_word_to_memory(addr, registradores[r.rs2]);
         }
-        registradores[0] = 0; // Garante que o registrador x0 seja sempre 0
+        // BEQ (Desvia se rs1 == rs2)
+        else if (instype.find("beq") != string::npos) {
+            if (registradores[r.rs1] == registradores[r.rs2]) {
+                pc = pc + r.total;
+                pc_changed_by_branch = true;
+            }
+        } 
+        // BNE (Desvia se rs1 != rs2)
+        else if (instype.find("bne") != string::npos) {
+            if (registradores[r.rs1] != registradores[r.rs2]) {
+                pc = pc + r.total;
+                pc_changed_by_branch = true;
+            }
+        } 
+        // BLT (COM SINAL)
+        else if (instype.find("blt") != string::npos) {
+            if (registradores[r.rs1] < registradores[r.rs2]) {
+                pc = pc + r.total;
+                pc_changed_by_branch = true;
+            }
+        } 
+        // BGE (COM SINAL)
+        else if (instype.find("bge") != string::npos) {
+            if (registradores[r.rs1] >= registradores[r.rs2]) {
+                pc = pc + r.total;
+                pc_changed_by_branch = true;
+            }
+        } 
+        // BLTU (SEM SINAL)
+        else if (instype.find("bltu") != string::npos) {
+            // utilizamos uint32_t para comparação sem sinal
+            if ((uint32_t)registradores[r.rs1] < (uint32_t)registradores[r.rs2]) {
+                pc = pc + r.total;
+                pc_changed_by_branch = true;
+            }
+        } 
+        // BGEU (SEM SINAL)
+        else if (instype.find("bgeu") != string::npos) {
+            // utilizamos uint32_t para comparação sem sinal
+            if ((uint32_t)registradores[r.rs1] >= (uint32_t)registradores[r.rs2]) {
+                pc = pc + r.total;
+                pc_changed_by_branch = true;
+            }
+        }
 
+        registradores[0] = 0; // Garante que o registrador x0 seja sempre 0 
         // Atualiza o Program Counter
         if (!pc_changed_by_branch) {
             pc += 4;
