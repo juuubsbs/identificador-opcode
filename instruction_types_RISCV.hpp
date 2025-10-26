@@ -163,7 +163,7 @@ int32_t get_j_imm(uint32_t instr){
 }
 
 // ----------- EXTRAÇÃO DE REGISTRADORES ------------------
- struct Regs {
+struct Regs {
     int rd;
     int rs1;
     int rs2;

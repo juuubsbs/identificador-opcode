@@ -3,10 +3,9 @@
 #include <fstream>
 #include <map>     //map
 #include <iomanip> //setfill
-#include "intruction_types_RISCV.hpp"
+#include "instruction_types_RISCV.hpp"
 
 //precisa da memoria de dados pra conseguir entender oq tá dentro do rd pra ver oq dá errado
-
 using namespace std;
 
 int main() {
@@ -33,6 +32,7 @@ int main() {
         instype = opcode_identifier(current_hexa);
         contador[instype]++;
 
+        //set fill pra preencher as linhas com o 0 e deixar o print mais arrumado
         cout << "\nL. " << setw(2) << setfill('0') << cont_line
              << " inst. '" << current_line
              << "' eh: " << instype;
@@ -72,7 +72,7 @@ int main() {
         }
     }
 
-    cout << "\n\n================= RESUMO ============\n";
+    cout << "\n\n================= RESUMO =================\n";
     for (auto &par : contador) {
         cout << par.first << " -> " << setw(2) << setfill('0') << par.second << " instrucoes\n";
     }
