@@ -13,10 +13,6 @@
 */
 
 //memoria de instruções                           
-//implementar forwarding                          
-//implementar os NOPS                             
-//criar o somador de endereço 
-//gerar os arquivos e comparar o numero de linhas
 
 using namespace std;
 
@@ -24,15 +20,13 @@ struct instrucoes{
     uint32_t id; //linha atual
     string tipoInst; //addi, beq
     Regs r; //imediato, rs1, rs2, rd
+    uint32_t hex_value;
 };
 
 int main() {
-    int cont_line = 0;
-    string instype;
-
     //dita a base do código que vai ser lido
     int base = 16;
-
+    vector<instrucoes> memoria_instrucoes;
     //abre o arquivo
     ifstream meu_arquivo("dumps/nopsnopsnops.txt");
     if (!meu_arquivo.is_open()) {
@@ -40,53 +34,58 @@ int main() {
         return 1;
     }
 
-    string current_line; //variavel que contém a linha atual de leitura
+    string current_line; //variavel que contém a linha de leitura
+    int linha_atual = 0; //contador que contém a linha atual
 
     vector<uint32_t> instruction_memory;//vetor IMPORTANTEEE
-    int cont_linha;
-
-
-    vector<instrucoes> memoria_instrucoes;
-
     //!!!!aqui fosse catalogado a memoria de intruções
     while (getline(meu_arquivo, current_line)) {
         if (current_line.empty()) continue;
-        //!!!!!!!!!!!!!!!!!!!!!!!!!
-        instruction_memory.push_back(stoul(current_line, nullptr, base));
-        cont_linha++;
-        //!!!!!!!!!
-
+        // 1. Converte a linha de texto para um número hexadecimal
+        uint32_t hexa = stoul(current_line, nullptr, base);
+        // 2. Decodifica o tipo da instrução e seus registradores
+        string nome_instrucao = opcode_identifier(hexa);
+        Regs registradores_instrucao = get_registers(hexa, nome_instrucao);
+        // 3. Cria um objeto 'instrucoes' temporario para guardar tudo
+        instrucoes nova_instrucao;
+        nova_instrucao.id = linha_atual;
+        nova_instrucao.tipoInst = nome_instrucao;
+        nova_instrucao.r = registradores_instrucao;
+        nova_instrucao.hex_value = hexa;
+        // 4. Adiciona a instrução já decodificada ao seu vetor principal
+        memoria_instrucoes.push_back(nova_instrucao);
+        linha_atual++;
     }
     meu_arquivo.close();
     
     // Inicialização do mapa de contagem
     map<string, int> contador;
-    uint32_t current_hexa;
-    //vetor da memoria de intruções, é esse que usa
     
 //..................................................
 //...bool conflito_rs1 (memoria_instrucoes[0].r.rd == memoria_instrucoes[1].r.rs1);
 //..................................................
 
     // Loop de simulação principal 
-    while (pc < instruction_memory.size() * 4) {
-        cont_line++;
+    size_t instruction_index = 0; // utiliza indice para percorrer a nova memoria
 
-        // Busca a instrução da memória usando o PC
-        current_hexa = instruction_memory[pc / 4];
+    while (instruction_index < memoria_instrucoes.size()) {
+        // Busca a instrução já decodificada da nova memoria
+        const instrucoes& current_inst = memoria_instrucoes[instruction_index];
         
-        // Identifica a instrução
-        instype = opcode_identifier(current_hexa);
+        // Extrai as informações que a ju pediu
+        uint32_t current_hexa = current_inst.hex_value;
+        string instype = current_inst.tipoInst;
+        Regs r = current_inst.r;
+        pc = instruction_index * 4; // Atualizamos o pc para manter os prints corretos
+
         contador[instype]++;
 
         //set fill pra preencher as linhas com o 0 e deixar o print mais arrumado
-        cout << "\nL. " << setw(2) << setfill('0') << cont_line
+        cout << "\nL. " << setw(2) << setfill('0') << (instruction_index + 1)
              << " (PC=" << pc << ")"
              << " inst. '" << hex << current_hexa << dec
              << "' eh: " << instype;
-
         // Extrai registradores e imediatos
-        Regs r = get_registers(current_hexa, instype);
         cout << " | rd=" << r.rd
              << " rs1=" << r.rs1
              << " rs2=" << r.rs2;
@@ -115,7 +114,7 @@ int main() {
             cout << " | imm(J) = [...] = " << r.total;
         }
 //---------------------------------------------------------------------------
-        // Executa a instrução decodificada
+        // Executa a instrução decodificada 
         bool pc_changed_by_branch = false;
         //essa parte realiza a soma, subtração entre outros dos valores
         /*
@@ -213,12 +212,17 @@ int main() {
         }
 
         registradores[0] = 0; // Garante que o registrador x0 seja sempre 0 
-        // Atualiza o Program Counter
+
+        // 4. ATUALIZAÇÃO DO CONTADOR DO LOOP
         if (!pc_changed_by_branch) {
-            pc += 4;
+            // Se não houve desvio, simplesmente vai pra proxima instrução no vetor
+            instruction_index++;
+        } else {
+            // Se houve um desvio, o pc foi atualizado
+            // precisa encontrar o novo indice que corresponde ao novo pc
+            instruction_index = pc / 4;
         }
     }
-
     cout << "\n\n================= RESUMO =================\n";
     for (auto &par : contador) {
         cout << par.first << " -> " << setw(2) << setfill('0') << par.second << " instrucoes\n";
