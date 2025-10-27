@@ -48,7 +48,6 @@ int main() {
              << " (PC=" << pc << ")"
              << " inst. '" << hex << current_hexa << dec
              << "' eh: " << instype
-             << " | rd=" << r.rd
              << " rs1=" << r.rs1
              << " rs2=" << r.rs2;
         
