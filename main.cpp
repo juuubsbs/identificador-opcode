@@ -21,6 +21,102 @@ struct hazard{
     bool forwarding;
 };
 
+void imprimirComHazardsENops(const vector<instrucoes>& instrucoesMem, const vector<hazard>& hazard_lista) {
+    cout << "== CODIGO COM INSERCAO DE NOPS ==" << endl;
+    // vector que diz quantos nops precisa inserir antes de cada instrução
+    vector<int> nopsAntesDaInstrucao(instrucoesMem.size(), 0);
+    // Analisa a lista de hazards e marca onde inserir os nops
+    for (const auto& h : hazard_lista) {
+        if (h.tipoErro == "DADOS") {
+            int nops_necessarios = 0;
+            int distancia = h.indice - h.com_quem;
+
+            // Verifica o hazard é um 'lw'
+            bool eh_load_use = instrucoesMem[h.com_quem].tipoInst.find("lw") != string::npos;
+
+            if (h.forwarding) {
+                // Com forwarding, só o Load-Use com distância 1 precisa de NOP
+                if (eh_load_use && distancia == 1) {
+                    nops_necessarios = 1;
+                }
+            } else {
+                // Sem forwarding, a quantidade de nops depende da distância
+                if (distancia == 1) {
+                    nops_necessarios = eh_load_use ? 1 : 2;
+                } else if (distancia == 2) { 
+                    nops_necessarios = 1;
+                }
+            }
+            nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], nops_necessarios);
+
+        } else if (h.tipoErro == "CONTROLE") {
+            // Um branch causa 1 nop na instrução seguinte
+             nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], 1);
+        }
+    }
+
+    // imprime instrucoes com nops inseridos
+    for (size_t i = 0; i < instrucoesMem.size(); ++i) {
+        for (int k = 0; k < nopsAntesDaInstrucao[i]; ++k) {
+            cout << "      00000013  nop (Hazard)" << endl;
+      }
+
+        cout << "id = " << setfill('0') << setw(2) << instrucoesMem[i].id
+             << "  " << hex << setw(8) << setfill('0') << instrucoesMem[i].hex_value
+             << "  " << instrucoesMem[i].tipoInst << dec << endl;
+    }
+
+    cout << "========================================" << endl;
+}
+
+void gerarDumpfile(const string& nomeArquivo,
+                   const vector<instrucoes>& instrucoesMem,
+                   const vector<hazard>& hazard_lista) {
+    
+    ofstream arquivo_saida(nomeArquivo);
+    if (!arquivo_saida.is_open()) {
+        cout << "ERRO: Nao foi possivel criar o arquivo " << nomeArquivo << endl;
+        return;
+    }
+
+    vector<int> nopsAntesDaInstrucao(instrucoesMem.size(), 0);
+
+    for (const auto& h : hazard_lista) {
+        if (h.tipoErro == "DADOS") {
+            int nops_necessarios = 0;
+            int distancia = h.indice - h.com_quem;
+            bool eh_load_use = instrucoesMem[h.com_quem].tipoInst.find("lw") != string::npos;
+
+            if (h.forwarding) {
+                if (eh_load_use && distancia == 1) {
+                    nops_necessarios = 1;
+                }
+            } else {
+                if (distancia == 1) {
+                    nops_necessarios = eh_load_use ? 1 : 2;
+                } else if (distancia == 2) {
+                    nops_necessarios = 1;
+                }
+            }
+            nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], nops_necessarios);
+
+        } else if (h.tipoErro == "CONTROLE") {
+             nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], 1);
+        }
+    }
+
+    for (size_t i = 0; i < instrucoesMem.size(); ++i) {
+        for (int k = 0; k < nopsAntesDaInstrucao[i]; ++k) {
+            arquivo_saida << hex << setfill('0') << setw(8) << 0x13 << endl;
+        }
+        arquivo_saida << hex << setfill('0') << setw(8) << instrucoesMem[i].hex_value << endl;
+    }
+
+    arquivo_saida.close();
+    cout << "Arquivo '" << nomeArquivo << "' gerado com sucesso." << endl;
+}
+
+
 int main() {
     //dita a base do código que vai ser lido
     int base = 16;
@@ -58,70 +154,70 @@ int main() {
     }
     meu_arquivo.close();
 
+    cout << "\n--- Gerando arquivo SEM Forwarding ---" << endl;
+    {
+        bool forwarding = false; 
+        vector<hazard> hazard_lista;
+        int tamanho = memoria_instrucoes.size();
 
-    //id = 01 04c0006f
-    //id = 02 ff810113
-    //id = 03 0x00000033 nop
-    //id = 04 00112023
-    //id = 05 00200293
-    //id = 06 00a2cc63
-    //
-    //
-    //fazer uma função que lê a lista de hazards e printa que nem ali em cima
-    //
-    //
-    //lembrando que depois felski quer 2 arquivos dumpfile, um com forwarding e outro sem
+        //varrendo a memoria de intruções e encontrando os hazards
+        for (int i = 0; i < tamanho; i++) {
+            const auto& instrucao_atual = memoria_instrucoes[i];
 
-
-    //........................................................
-    int tamanho = memoria_instrucoes.size();
-    instrucoes instrucao;
-    int rd_antigo;
-    hazard hazard_text;
-    vector<hazard> hazard_lista;
-    bool forwarding;
-
-    //varrendo a memoria de intruções e encontrando os hazards
-    //considerando que o i é até a penultima linha
-    for(int i = 0; i <= tamanho-1; i++){
-        instrucao = memoria_instrucoes[i];
-
-        //para j como 1 anterior a i em um range(i-2, 0)
-        for(int j = i-1; j >= i - 2 && j >= 0; j--){
-            rd_antigo = memoria_instrucoes[j].r.rd;
-
-            if(forwarding == false){
-                //erro de DADOS caso o rs1[j] ou rs2[j] sejam iguais ao rd[i]
-                if((instrucao.r.rs1 == rd_antigo && rd_antigo != 0)  || (instrucao.r.rs2 == rd_antigo && rd_antigo != 0)){
-                    hazard_text.tipoErro = "DADOS";
-                    hazard_text.indice = i;
-                    hazard_text.com_quem = j;
-                    hazard_text.forwarding = false;
-                    hazard_lista.push_back(hazard_text);
-                    /// AQUI COLOCAR 2 NOP ENTRE INDICE E COM QUEM
-                }
-            }
-            else if(j = i-1 && instrucao.tipoInst.find("lw   ")){
-                if((instrucao.r.rs1 == rd_antigo && rd_antigo != 0)  || (instrucao.r.rs2 == rd_antigo && rd_antigo != 0)){
-                    hazard_text.tipoErro = "DADOS";
-                    hazard_text.indice = i;
-                    hazard_text.com_quem = j;
-                    hazard_text.forwarding = true;
-                    hazard_lista.push_back(hazard_text);
-                    /// AQUI, SO COLOCAR 1 NOP ENTRE INDICE E COM QUEM
+            // hazard de dados
+            if (instrucao_atual.r.rs1 > 0 || instrucao_atual.r.rs2 > 0) {
+                for (int j = i - 1; j >= i - 2 && j >= 0; j--) {
+                    const auto& instrucao_anterior = memoria_instrucoes[j];
+                    bool anterior_escreve_reg = instrucao_anterior.r.rd > 0 && instrucao_anterior.tipoInst.find("sw") == string::npos && instrucao_anterior.tipoInst.find("Tipo B") == string::npos;
+                    if (anterior_escreve_reg && (instrucao_atual.r.rs1 == instrucao_anterior.r.rd || instrucao_atual.r.rs2 == instrucao_anterior.r.rd)) {
+                        hazard h = {"DADOS", j, i, forwarding};
+                        hazard_lista.push_back(h);
+                        break;
+                    }
                 }
             }
 
+            // hazard de controle
+            if (i > 0 && memoria_instrucoes[i - 1].tipoInst.find("Tipo B") != string::npos) {
+                hazard h = {"CONTROLE", i - 1, i, forwarding};
+                hazard_lista.push_back(h);
             }
         }
-        
-        if(instrucao.tipoInst.find("Tipo B - ") && forwarding == false){
-            hazard_text.tipoErro = "CONTROLE";
-            //aqui está sem indice pois ele vai dar conflito com
-            // os três seguintes, então só adiciona 3 nops após ele e deu
-            hazard_text.forwarding = false;
-            hazard_lista.push_back(hazard_text);
-        }
+        imprimirComHazardsENops(memoria_instrucoes, hazard_lista);
+        gerarDumpfile("dumpfile_sem_forwarding.txt", memoria_instrucoes, hazard_lista);
+    }
 
+    cout << "\n--- Gerando arquivo COM Forwarding ---" << endl;
+    {
+        bool forwarding = true; 
+        vector<hazard> hazard_lista;
+        int tamanho = memoria_instrucoes.size();
+
+        //varrendo a memoria de intruções e encontrando os hazards
+        for (int i = 0; i < tamanho; i++) {
+            const auto& instrucao_atual = memoria_instrucoes[i];
+
+            // hazard de dados
+            if (instrucao_atual.r.rs1 > 0 || instrucao_atual.r.rs2 > 0) {
+                for (int j = i - 1; j >= i - 2 && j >= 0; j--) {
+                    const auto& instrucao_anterior = memoria_instrucoes[j];
+                    bool anterior_escreve_reg = instrucao_anterior.r.rd > 0 && instrucao_anterior.tipoInst.find("sw") == string::npos && instrucao_anterior.tipoInst.find("Tipo B") == string::npos;
+                    if (anterior_escreve_reg && (instrucao_atual.r.rs1 == instrucao_anterior.r.rd || instrucao_atual.r.rs2 == instrucao_anterior.r.rd)) {
+                        hazard h = {"DADOS", j, i, forwarding};
+                        hazard_lista.push_back(h);
+                        break;
+                    }
+                }
+            }
+
+            // hazard de controle
+            if (i > 0 && memoria_instrucoes[i - 1].tipoInst.find("Tipo B") != string::npos) {
+                hazard h = {"CONTROLE", i - 1, i, forwarding};
+                hazard_lista.push_back(h);
+            }
+        }
+        imprimirComHazardsENops(memoria_instrucoes, hazard_lista);
+        gerarDumpfile("dumpfile_com_forwarding.txt", memoria_instrucoes, hazard_lista);
+    }
     return 0;
 }
