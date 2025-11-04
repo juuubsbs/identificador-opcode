@@ -51,7 +51,7 @@ void imprimirComHazardsENops(const vector<instrucoes>& instrucoesMem, const vect
 
         } else if (h.tipoErro == "CONTROLE") {
             // Um branch causa 1 nop na instrução seguinte
-             nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], 1);
+             nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], 3);
         }
     }
 
@@ -101,7 +101,7 @@ void gerarDumpfile(const string& nomeArquivo,
             nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], nops_necessarios);
 
         } else if (h.tipoErro == "CONTROLE") {
-             nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], 1);
+             nopsAntesDaInstrucao[h.indice] = max(nopsAntesDaInstrucao[h.indice], 3);
         }
     }
 
