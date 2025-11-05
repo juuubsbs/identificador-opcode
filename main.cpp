@@ -122,7 +122,7 @@ int main() {
     int base = 16;
     vector<instrucoes> memoria_instrucoes;
     //abre o arquivo
-    ifstream meu_arquivo("dumps/nopsnopsnops.txt");
+    ifstream meu_arquivo("dumps/profs/fib_rec_hexadecimal.txt");
     if (!meu_arquivo.is_open()) {
         cout << "Erro ao abrir" << endl;
         return 1;
@@ -178,7 +178,7 @@ int main() {
             }
 
             // hazard de controle
-            if (i > 0 && memoria_instrucoes[i - 1].tipoInst.find("Tipo B") != string::npos) {
+            if (i > 0 && memoria_instrucoes[i - 1].tipoInst.find("Tipo B") != string::npos || i > 0 && memoria_instrucoes[i - 1].tipoInst.find("jal") != string::npos) {
                 hazard h = {"CONTROLE", i - 1, i, forwarding};
                 hazard_lista.push_back(h);
             }
@@ -211,7 +211,7 @@ int main() {
             }
 
             // hazard de controle
-            if (i > 0 && memoria_instrucoes[i - 1].tipoInst.find("Tipo B") != string::npos) {
+            if (i > 0 && memoria_instrucoes[i - 1].tipoInst.find("Tipo B") != string::npos || i > 0 && memoria_instrucoes[i - 1].tipoInst.find("jal") != string::npos) {
                 hazard h = {"CONTROLE", i - 1, i, forwarding};
                 hazard_lista.push_back(h);
             }
